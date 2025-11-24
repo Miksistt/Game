@@ -1,4 +1,5 @@
-﻿namespace Game.Models
+﻿using Game;
+namespace Game.Models
 {
     public class Room
     {
