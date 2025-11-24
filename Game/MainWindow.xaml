@@ -1,0 +1,132 @@
+﻿<Window x:Class="Game.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:Game.ViewModels"
+        Title="Боевая Игра" Height="700" Width="900">
+
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Боевая Игра" FontSize="20" FontWeight="Bold"/>
+            <TextBlock Text=" - " FontSize="20"/>
+            <TextBlock Text="{Binding Status}" FontSize="16" Foreground="Blue"/>
+            <TextBlock Text=" [Создатель]" Foreground="Green" FontWeight="Bold" 
+                      Visibility="{Binding IsRoomCreator, Converter={StaticResource BoolToVis}}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                <GroupBox Header="Игрок">
+                    <StackPanel>
+                        <TextBlock Text="Ваше имя:"/>
+                        <TextBox Text="{Binding PlayerName, UpdateSourceTrigger=PropertyChanged}" 
+                                 IsEnabled="{Binding IsRoomCreator, Converter={StaticResource BoolToVis}, ConverterParameter=True}"
+                                 Margin="0,0,0,10"/>
+
+                        <TextBlock Text="ID комнаты:"/>
+                        <TextBox Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Создать комнату" Command="{Binding CreateRoomCommand}" Margin="0,0,5,0"/>
+                            <Button Content="Присоединиться" Command="{Binding JoinRoomCommand}" Margin="5,0,0,0"/>
+                        </StackPanel>
+
+                        <Button Content="START ИГРУ" Command="{Binding StartGameCommand}" 
+                              Background="Green" Foreground="White" FontWeight="Bold"
+                              Margin="0,10,0,0"
+                              Visibility="{Binding IsRoomCreator, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Действия в раунде" Margin="0,10,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Выберите цель:" FontWeight="Bold" 
+                                  Visibility="{Binding IsMyTurn, Converter={StaticResource BoolToVis}}"/>
+
+                        <ItemsControl ItemsSource="{Binding OtherPlayers}" Margin="0,5" 
+             Visibility="{Binding IsMyTurn, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                                        <Button Content="⚔️ Атаковать" 
+                       Command="{Binding DataContext.AttackCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                       CommandParameter="{Binding}" 
+                       IsEnabled="{Binding DataContext.IsMyTurn, RelativeSource={RelativeSource AncestorType=Window}}"
+                       Margin="2" Padding="5,2"/>
+                                        <Button Content="🛡️ Защитить" 
+                       Command="{Binding DataContext.DefendCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                       CommandParameter="{Binding}" 
+                       IsEnabled="{Binding DataContext.IsMyTurn, RelativeSource={RelativeSource AncestorType=Window}}"
+                       Margin="2" Padding="5,2"/>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" Margin="5,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Ожидаем других игроков..." FontStyle="Italic"
+                                  Visibility="{Binding IsMyTurn, Converter={StaticResource BoolToVis}, ConverterParameter=True}"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                <GroupBox Header="Информация о комнате">
+                    <StackPanel>
+                        <TextBlock Text="{Binding CurrentRoom.Number, StringFormat='Комната: {0}'}"/>
+                        <TextBlock Text="{Binding IsRoomCreator, StringFormat='Создатель комнаты: {0}'}" 
+                                  Foreground="Green" FontWeight="Bold"/>
+                        <ItemsControl ItemsSource="{Binding CurrentRoom.PlayerState}" Margin="0,5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Value.Name, StringFormat='Игрок: {0}'}" 
+                                               Margin="0,2"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Лог раунда" Margin="0,10,0,0">
+                    <ListBox ItemsSource="{Binding RoundActions}" Height="150"/>
+                </GroupBox>
+
+                <GroupBox Header="Общий лог" Margin="0,10,0,0">
+                    <ListBox ItemsSource="{Binding Logs}" Height="189"/>
+                </GroupBox>
+            </StackPanel>
+        </Grid>
+
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding PlayerName, StringFormat='Игрок: {0}'}"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="{Binding IsMyTurn, StringFormat='Мой ход: {0}'}"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="{Binding IsRoomCreator, StringFormat='Создатель: {0}'}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
